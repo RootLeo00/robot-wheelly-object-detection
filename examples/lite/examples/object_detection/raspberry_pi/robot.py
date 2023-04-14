@@ -25,8 +25,3 @@ def reverse(sec):
  gpio.output(24, True)
  time.sleep(sec)
  gpio.cleanup()
-
-print( "forward")
-forward(4)
-print ("reverse")
-reverse(2)
