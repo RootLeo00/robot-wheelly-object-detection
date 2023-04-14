@@ -25,8 +25,11 @@ def reverse(sec):
  gpio.output(24, True)
  time.sleep(sec)
  gpio.cleanup()
+<<<<<<< HEAD:rasp/test.py
 
 print( "forward")
 forward(4)
 print ("reverse")
 reverse(2)
+=======
+>>>>>>> main:examples/lite/examples/object_detection/raspberry_pi/robot.py
