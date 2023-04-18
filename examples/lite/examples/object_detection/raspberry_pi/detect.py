@@ -22,7 +22,7 @@ from tflite_support.task import processor
 from tflite_support.task import vision
 import utils
 import robot
-
+import sonar
 
 def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         enable_edgetpu: bool) -> None:
@@ -65,6 +65,8 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
 
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
+    if(sonar.distance()<30):
+        robot.stop()
     success, image = cap.read()
     if not success:
       sys.exit(
@@ -108,7 +110,7 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
       category = detection.categories[0]
       category_name = category.category_name
       if category_name == "person":
-            robot.forward()
+            robot.forward(1)
 
   cap.release()
   cv2.destroyAllWindows()
