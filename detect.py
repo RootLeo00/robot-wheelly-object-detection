@@ -23,6 +23,7 @@ from tflite_support.task import vision
 import utils
 import robot
 import sonar
+import RPi.GPIO as GPIO
 
 def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         enable_edgetpu: bool) -> None:
@@ -65,56 +66,65 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
 
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
+    distance=sonar.distance()
+    print("distance", distance)
     if(sonar.distance()<30):
         robot.stop()
-    success, image = cap.read()
-    if not success:
-      sys.exit(
-          'ERROR: Unable to read from webcam. Please verify your webcam settings.'
-      )
-
-    counter += 1
-    image = cv2.flip(image, 1)
-
-    # Convert the image from BGR to RGB as required by the TFLite model.
-    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    # Create a TensorImage object from the RGB image.
-    input_tensor = vision.TensorImage.create_from_array(rgb_image)
-
-    # Run object detection estimation using the model.
-    detection_result = detector.detect(input_tensor)
-
-    # Draw keypoints and edges on input image
-    image = utils.visualize(image, detection_result)
-
-    # Calculate the FPS
-    if counter % fps_avg_frame_count == 0:
-      end_time = time.time()
-      fps = fps_avg_frame_count / (end_time - start_time)
-      start_time = time.time()
-
-    # Show the FPS
-    fps_text = 'FPS = {:.1f}'.format(fps)
-    text_location = (left_margin, row_size)
-    cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
-                font_size, text_color, font_thickness)
-
-    # Stop the program if the ESC key is pressed.
-    if cv2.waitKey(1) == 27:
-      break
-    cv2.imshow('object_detector', image)
-
-    #move the robot if target is detected
-    for detection in detection_result.detections:
-      category = detection.categories[0]
-      category_name = category.category_name
-      if category_name == "person":
-            robot.forward(1)
+        print("exit stop")
+    else:
+        success, image = cap.read()
+        height, width, channels = image.shape
+        if not success:
+          sys.exit(
+              'ERROR: Unable to read from webcam. Please verify your webcam settings.'
+          )
+    
+        counter += 1
+        image = cv2.flip(image, 1)
+    
+        # Convert the image from BGR to RGB as required by the TFLite model.
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+        # Create a TensorImage object from the RGB image.
+        input_tensor = vision.TensorImage.create_from_array(rgb_image)
+    
+        # Run object detection estimation using the model.
+        detection_result = detector.detect(input_tensor)
+        if (len(detection_result.detections)>0):
+            boundingbox=detection_result.detections[0].bounding_box
+            print(boundingbox)
+            distance = round(158 - 0.43 * ((boundingbox.width + boundingbox.height) / 2))
+            print("DISTANCE- webcam", distance)
+        # Draw keypoints and edges on input image
+        image = utils.visualize(image, detection_result)
+    
+        # Calculate the FPS
+        if counter % fps_avg_frame_count == 0:
+          end_time = time.time()
+          fps = fps_avg_frame_count / (end_time - start_time)
+          start_time = time.time()
+    
+        # Show the FPS
+        fps_text = 'FPS = {:.1f}'.format(fps)
+        text_location = (left_margin, row_size)
+        cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
+                    font_size, text_color, font_thickness)
+    
+        # Stop the program if the ESC key is pressed.
+        if cv2.waitKey(1) == 27:
+          break
+        cv2.imshow('object_detector', image)
+    
+        # move the robot if target is detected
+        for detection in detection_result.detections:
+          category = detection.categories[0]
+          category_name = category.category_name
+          if category_name == "person":
+            robot.forward(0.05)
 
   cap.release()
   cv2.destroyAllWindows()
-
+  GPIO.cleanup()
 
 def main():
   parser = argparse.ArgumentParser(
