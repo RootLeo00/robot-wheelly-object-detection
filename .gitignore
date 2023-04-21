@@ -7,3 +7,4 @@ examples/
 
 #python
 __pycache__/
+nanodet/
