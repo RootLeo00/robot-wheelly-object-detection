@@ -55,3 +55,15 @@ def visualize(
                 _FONT_SIZE, _TEXT_COLOR, _FONT_THICKNESS)
 
   return image
+
+# focal length finder function
+def focal_length(measured_distance, real_width, width_in_rf_image):
+	focal_length = (width_in_rf_image* measured_distance)/ real_width
+	return focal_length
+
+
+# distance estimation function
+def distance_finder(focal_length, real_face_width, face_width_in_frame):
+	distance = (real_face_width * focal_length)/face_width_in_frame
+	return distance
+

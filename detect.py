@@ -21,9 +21,9 @@ from tflite_support.task import core
 from tflite_support.task import processor
 from tflite_support.task import vision
 import utils
-import robot
-import sonar
-import RPi.GPIO as GPIO
+# import robot
+# import sonar
+# import RPi.GPIO as GPIO
 
 def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         enable_edgetpu: bool) -> None:
@@ -46,6 +46,8 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
   cap = cv2.VideoCapture(camera_id)
   cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
   cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+  cap_xcenter=cap.get(cv2.CAP_PROP_FRAME_WIDTH) /2
+  focal_length=utils.focal_length(width_in_rf_image=250,real_width=55,measured_distance=150)
 
   # Visualization parameters
   row_size = 20  # pixels
@@ -66,11 +68,13 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
 
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
-    distance=sonar.distance()
-    print("distance", distance)
-    if(sonar.distance()<30):
-        robot.stop()
-        print("exit stop")
+    # distance=sonar.distance()
+    # print("distance", distance)
+    # if(distance<30):
+    #     # robot.stop()
+    #     print("exit stop")
+    if(False):
+        print("error")
     else:
         success, image = cap.read()
         height, width, channels = image.shape
@@ -90,14 +94,30 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
     
         # Run object detection estimation using the model.
         detection_result = detector.detect(input_tensor)
+
+        #calculate distance with camera bounding box proportion
         if (len(detection_result.detections)>0):
             boundingbox=detection_result.detections[0].bounding_box
             print(boundingbox)
-            distance = round(158 - 0.43 * ((boundingbox.width + boundingbox.height) / 2))
+            boundingbox_center = boundingbox.origin_x+boundingbox.width/2
+
+            distance = utils.distance_finder(focal_length=focal_length,real_face_width=55,face_width_in_frame=boundingbox.width)
+            # round(158 - 0.43 * ((boundingbox.width + boundingbox.height) / 2)) #TODO: change 158
             print("DISTANCE- webcam", distance)
+
+            #calculate misalignment of the center of the bounding box on the x-axis
+            
+            print ("boundingbox_center", boundingbox_center)
+            print ("center", cap_xcenter)
+            if (boundingbox_center > cap_xcenter+30): # 30 is the threshold (intorno)
+                print("move left")
+            elif (boundingbox_center < cap_xcenter-30): # 30 is the threshold (intorno)
+                print("move right")
+
         # Draw keypoints and edges on input image
         image = utils.visualize(image, detection_result)
-    
+        cv2.imwrite('opencv.png', image)
+        exit()
         # Calculate the FPS
         if counter % fps_avg_frame_count == 0:
           end_time = time.time()
@@ -119,12 +139,12 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         for detection in detection_result.detections:
           category = detection.categories[0]
           category_name = category.category_name
-          if category_name == "person":
-            robot.forward(0.05)
+          # if category_name == "person":
+          #   robot.forward(0.05)
 
   cap.release()
   cv2.destroyAllWindows()
-  GPIO.cleanup()
+  # GPIO.cleanup()
 
 def main():
   parser = argparse.ArgumentParser(
