@@ -15,7 +15,7 @@
 
 import cv2
 import numpy as np
-from tflite_support.task import processor
+from tflite_support import processor
 
 _MARGIN = 10  # pixels
 _ROW_SIZE = 10  # pixels
