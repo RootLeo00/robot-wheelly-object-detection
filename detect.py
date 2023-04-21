@@ -21,9 +21,9 @@ from tflite_support.task import core
 from tflite_support.task import processor
 from tflite_support.task import vision
 import utils
-# import robot
-# import sonar
-# import RPi.GPIO as GPIO
+import robot
+import sonar
+import RPi.GPIO as GPIO
 
 def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         enable_edgetpu: bool) -> None:
@@ -68,13 +68,11 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
 
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
-    # distance=sonar.distance()
-    # print("distance", distance)
-    # if(distance<30):
-    #     # robot.stop()
-    #     print("exit stop")
-    if(False):
-        print("error")
+    distance=sonar.distance()
+    print("distance", distance)
+    if(distance<30):
+         robot.stop()
+         print("exit stop")
     else:
         success, image = cap.read()
         height, width, channels = image.shape
@@ -107,17 +105,11 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
 
             #calculate misalignment of the center of the bounding box on the x-axis
             
-            print ("boundingbox_center", boundingbox_center)
-            print ("center", cap_xcenter)
-            if (boundingbox_center > cap_xcenter+30): # 30 is the threshold (intorno)
-                print("move left")
-            elif (boundingbox_center < cap_xcenter-30): # 30 is the threshold (intorno)
-                print("move right")
+            #print ("boundingbox_center", boundingbox_center)
+            #print ("center", cap_xcenter)
 
         # Draw keypoints and edges on input image
         image = utils.visualize(image, detection_result)
-        cv2.imwrite('opencv.png', image)
-        exit()
         # Calculate the FPS
         if counter % fps_avg_frame_count == 0:
           end_time = time.time()
@@ -139,12 +131,18 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         for detection in detection_result.detections:
           category = detection.categories[0]
           category_name = category.category_name
-          # if category_name == "person":
-          #   robot.forward(0.05)
+          if (boundingbox_center > cap_xcenter+30): # 30 is the threshold (intorno)
+              print("robot moves left")
+              robot.forwardleft(0.05)
+          elif (boundingbox_center < cap_xcenter-30): # 30 is the threshold (intorno)
+              print("robot moves right")
+              robot.forwardright(0.05)
+          elif category_name == "person" and category.score>0.70:
+             robot.forward(0.05)
 
   cap.release()
   cv2.destroyAllWindows()
-  # GPIO.cleanup()
+  GPIO.cleanup()
 
 def main():
   parser = argparse.ArgumentParser(
