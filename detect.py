@@ -17,8 +17,6 @@ import sys
 import time
 
 import cv2
-import tflite_support
-print("tflite version", tflite_support.__version__)
 from tflite_support.task import core
 from tflite_support.task import processor
 from tflite_support.task import vision
@@ -71,6 +69,8 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
       base_options=base_options, detection_options=detection_options)
   detector = vision.ObjectDetector.create_from_options(options)
 
+  servo = servo.Servo(0.0)
+  servo.rotateNeutral()
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
     distance=sonar.distance()
@@ -81,7 +81,12 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
     else:
 
         # move servo-webcam 
-        #...
+        if servo.duty < 12 and servo.duty > 7.5: #servo is in position left
+            servo.rotateLeft_90()
+        elif servo.duty < 7.5 and servo.duty > 2.5: #servo is in position right
+           servo.rotateRight_90()
+        elif servo.duty == 0: #servo is neutral position right
+            servo.rotateNeutral()
 
         success, image = cap.read()
         height, width, channels = image.shape
@@ -141,10 +146,16 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
           category = detection.categories[0]
           category_name = category.category_name
           if category_name == "person" and category.score>0.70:
-             # 1) get servo angle (-45 degree, 45 degree)
-             print("get servo angle", servo.getAngle())
-             # 2) move robot forward, forward left (if -45), forward right (if +45)
-             # 3) rotate camera angle to 0 degree (centered)
+            # 1) get servo angle (-45 degree, 45 degree)
+            servo_angle=servo.getAngle()
+            print("get servo angle", servo_angle)
+            # 2) move robot forward, forward left (if -45), forward right (if +45)
+            if servo_angle <0:
+                    robot.forwardleft(0.05)
+            elif servo_angle >0:
+                    robot.forwardright(0.05)
+            # 3) rotate camera angle to 0 degree (centered)
+            servo.setAngle(0)
 
              # 4) adjust robot direction based on bounding box
         #   if (boundingbox_center > cap_xcenter+30): # 30 is the threshold (intorno)
