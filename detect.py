@@ -17,14 +17,18 @@ import sys
 import time
 
 import cv2
+import tflite_support
+print("tflite version", tflite_support.__version__)
 from tflite_support.task import core
 from tflite_support.task import processor
 from tflite_support.task import vision
+
 import utils
 import robot
 import sonar
 import servo
 import RPi.GPIO as GPIO
+
 
 def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         enable_edgetpu: bool) -> None:

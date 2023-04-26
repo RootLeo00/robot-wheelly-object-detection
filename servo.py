@@ -5,6 +5,7 @@ import time
 #set GPIO Pins
 GPIO_PILOT = 16
 duty=0
+servo1 = 0
 #GPIO_POW = 26
 def init():
     #GPIO Mode (BOARD / BCM)
@@ -17,12 +18,12 @@ def init():
 
 
 #rotate left 90 degrees
-def rotateLeft_90(self):
+def rotateLeft_90():
     init()
     duty = 5
-    self.ChangeDutyCycle(duty)
+    servo1.ChangeDutyCycle(duty)
     time.isleep(0.5)
-    self.stop()
+    servo1.stop()
     GPIO.cleanup()
     
 #rotate left 90 degrees
