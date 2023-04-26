@@ -24,7 +24,7 @@ from tflite_support.task import vision
 import utils
 import robot
 import sonar
-import servo
+from servo import Servo
 import RPi.GPIO as GPIO
 
 
@@ -69,7 +69,7 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
       base_options=base_options, detection_options=detection_options)
   detector = vision.ObjectDetector.create_from_options(options)
 
-  servo = servo.Servo(0.0)
+  servo = Servo(2.5)
   servo.rotateNeutral()
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
@@ -81,12 +81,13 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
     else:
 
         # move servo-webcam 
-        if servo.duty < 12 and servo.duty > 7.5: #servo is in position left
-            servo.rotateLeft_90()
-        elif servo.duty < 7.5 and servo.duty > 2.5: #servo is in position right
-           servo.rotateRight_90()
-        elif servo.duty == 0: #servo is neutral position right
+        if servo.duty ==2.5: #servo is in position left
             servo.rotateNeutral()
+            time.sleep(0.5)
+        elif servo.duty ==12: #servo is in position right
+           servo.rotateLeft_90()
+        elif servo.duty == 7.5: #servo is neutral position right
+            servo.rotateRight_90()
 
         success, image = cap.read()
         height, width, channels = image.shape
