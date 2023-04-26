@@ -23,6 +23,7 @@ from tflite_support.task import vision
 import utils
 import robot
 import sonar
+import servo
 import RPi.GPIO as GPIO
 
 def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
@@ -74,6 +75,10 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
          robot.stop()
          print("exit stop")
     else:
+
+        # move servo-webcam 
+        #...
+
         success, image = cap.read()
         height, width, channels = image.shape
         if not success:
@@ -131,14 +136,23 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         for detection in detection_result.detections:
           category = detection.categories[0]
           category_name = category.category_name
-          if (boundingbox_center > cap_xcenter+30): # 30 is the threshold (intorno)
-              print("robot moves left")
-              robot.forwardleft(0.05)
-          elif (boundingbox_center < cap_xcenter-30): # 30 is the threshold (intorno)
-              print("robot moves right")
-              robot.forwardright(0.05)
-          elif category_name == "person" and category.score>0.70:
-             robot.forward(0.05)
+          if category_name == "person" and category.score>0.70:
+             # 1) get servo angle (-45 degree, 45 degree)
+             print("get servo angle", servo.getAngle())
+             # 2) move robot forward, forward left (if -45), forward right (if +45)
+             # 3) rotate camera angle to 0 degree (centered)
+
+             # 4) adjust robot direction based on bounding box
+        #   if (boundingbox_center > cap_xcenter+30): # 30 is the threshold (intorno)
+        #       print("robot moves left")
+        #       robot.forwardleft(0.05)
+        #   elif (boundingbox_center < cap_xcenter-30): # 30 is the threshold (intorno)
+        #       print("robot moves right")
+        #       robot.forwardright(0.05)
+        #   elif category_name == "person" and category.score>0.70:
+        #      robot.forward(0.05)
+
+
 
   cap.release()
   cv2.destroyAllWindows()
