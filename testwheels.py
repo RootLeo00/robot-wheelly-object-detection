@@ -1,56 +1,27 @@
-import time
-import RPi.GPIO as GPIO
+from wheels import MotorWheels
+import RPi.GPIO as gpio
+import sys
 
-GPIO.setmode(GPIO.BCM)
+if __name__ == '__main__':
+    try:
+        wheels=MotorWheels()
+        print( "forward")
+        wheels.forward(1)
+        print ("backward")
+        wheels.backward(1)
+        print("forward left")
+        wheels.forwardleft(1)
+        print("backward left")
+        wheels.backwardleft(1)
+        print("forward right")
+        wheels.forwardright(1)
+        print("backward right")
+        wheels.backwardright(1)
 
-print('start setup gpio')
-
-GPIO.setup(17,GPIO.OUT) #17 purple
-GPIO.setup(27,GPIO.OUT) #27 white
-                        #30 grnd
-GPIO.setup(23,GPIO.OUT) #23 brown
-GPIO.setup(24,GPIO.OUT) #34 orange
-
-print('end setup')
-
-print('left forward')
-GPIO.output(17,GPIO.HIGH)
-time.sleep(3)
-GPIO.output(17,GPIO.LOW)
-
-print('left backward')
-GPIO.output(27,GPIO.HIGH)
-time.sleep(3)
-GPIO.output(27,GPIO.LOW)
-
-
-print('right forward')
-GPIO.output(23,GPIO.HIGH)
-time.sleep(3)
-GPIO.output(23,GPIO.LOW)
-
-print('right backward')
-GPIO.output(24,GPIO.HIGH)
-time.sleep(3)
-GPIO.output(24,GPIO.LOW)
-
-print('all forward')
-GPIO.output(17,GPIO.HIGH)
-GPIO.output(23,GPIO.HIGH)
-time.sleep(3)
-GPIO.output(17,GPIO.LOW)
-GPIO.output(23,GPIO.LOW)
+    # Reset by pressing CTRL + C
+    except KeyboardInterrupt:
+       print("Wheels stopped by User")
+       gpio.cleanup()
+       sys.exit()
 
 
-print('all backward')
-GPIO.output(27,GPIO.HIGH)
-GPIO.output(24,GPIO.HIGH)
-time.sleep(3)
-GPIO.output(27,GPIO.LOW)
-GPIO.output(24,GPIO.LOW)
-
-
-
-GPIO.cleanup()
-print("the end")
-exit()

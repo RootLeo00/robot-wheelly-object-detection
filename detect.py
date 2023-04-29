@@ -8,7 +8,7 @@ from tflite_support.task import processor
 from tflite_support.task import vision
 
 import utils
-import robot
+import wheels
 import sonar
 from servo import Servo
 
@@ -52,7 +52,7 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
             # check sonar
             distance=sonar.distance()
             if(distance<30):
-                robot.stop()
+                wheels.stop()
                 time.sleep(1)
             else:
                 # move servo-webcam for random search
@@ -96,17 +96,17 @@ def follow_detected_object(servo, cap):
         distance=sonar.distance()
         while distance>30:
             if servo.is_rotated_left(): #servo is in position left
-                robot.forwardright(1) #!!!CHANGE TO LEFT
+                wheels.forwardright(1) #!!!CHANGE TO LEFT
                 servo.rotate_to_middle()
             elif servo.is_rotated_right(): #servo is in position right
-                robot.forwardleft(1) #!!!CHANGE TO RIGHT
+                wheels.forwardleft(1) #!!!CHANGE TO RIGHT
                 servo.rotate_to_middle()
             elif servo.is_rotated_middle(): #servo is position middle
-                robot.forward(0.05)
+                wheels.forward(0.05)
             distance=sonar.distance()
         
         # stop robot if distance is less than 30 cm
-        robot.stop()
+        wheels.stop()
         time.sleep(1)
         return
     
@@ -178,10 +178,10 @@ def robot_direction(boundingbox_center,cap_xcenter):
     # adjust robot direction according to the bounding box
     if (boundingbox_center > cap_xcenter+30): # 30 is the threshold (intorno)
         print("robot moves left")
-        robot.forwardleft(0.05)
+        wheels.forwardleft(0.05)
     elif (boundingbox_center < cap_xcenter-30): # 30 is the threshold (intorno)
         print("robot moves right")
-        robot.forwardright(0.05)
+        wheels.forwardright(0.05)
 
 
 def main():

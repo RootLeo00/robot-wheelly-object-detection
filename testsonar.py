@@ -1,6 +1,7 @@
 import time
 from sonar import Sonar
-import RPi.GPIO as GPIO
+import RPi.GPIO as gpio
+import sys
 
 if __name__ == '__main__':
     try:
@@ -12,5 +13,6 @@ if __name__ == '__main__':
     # Reset by pressing CTRL + C
     except KeyboardInterrupt:
        print("Measurement stopped by User")
-       GPIO.cleanup()
+       gpio.cleanup()
+       sys.exit()
 
