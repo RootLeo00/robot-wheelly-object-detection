@@ -8,8 +8,8 @@ from tflite_support.task import processor
 from tflite_support.task import vision
 
 import utils
-import wheels
-import sonar
+from wheels import MotorWheels
+from sonar import Sonar
 from servo import Servo
 
 import RPi.GPIO as GPIO
@@ -43,15 +43,18 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
             base_options=base_options, detection_options=detection_options)
         detector = vision.ObjectDetector.create_from_options(options)
 
-        # # initialize servo
+        #initialize servo
         servo = Servo(16)
+        #initialize wheels
+        wheels = MotorWheels()
+        #initialize sonar
+        sonar = Sonar()
 
         # continuously capture images from the camera and run inference
         while cap.isOpened():
 
             # check sonar
-            distance=sonar.distance()
-            if(distance<30):
+            if(sonar.distance()<30):
                 wheels.stop()
                 time.sleep(1)
             else:
@@ -74,7 +77,7 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
                         category = detection.categories[0] #consider first category
                         if not already_followed and category.category_name == "person" and category.score>0.70:
                             print("OBJECT DETECTED")
-                            follow_detected_object(servo, cap)
+                            follow_detected_object(servo=servo, cap=cap, sonar=sonar, wheels=wheels)
 
                             # stop following
                             already_followed=True
@@ -90,11 +93,10 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         GPIO.cleanup()
         sys.exit()
 
-def follow_detected_object(servo, cap):
+def follow_detected_object(servo, cap, sonar, wheels):
     try:
         # check sonar distance
-        distance=sonar.distance()
-        while distance>30:
+        while sonar.distance()>30:
             if servo.is_rotated_left(): #servo is in position left
                 wheels.forwardright(1) #!!!CHANGE TO LEFT
                 servo.rotate_to_middle()
@@ -103,7 +105,6 @@ def follow_detected_object(servo, cap):
                 servo.rotate_to_middle()
             elif servo.is_rotated_middle(): #servo is position middle
                 wheels.forward(0.05)
-            distance=sonar.distance()
         
         # stop robot if distance is less than 30 cm
         wheels.stop()
@@ -226,5 +227,6 @@ def main():
 
 if __name__ == '__main__':
   main()
+
 
 

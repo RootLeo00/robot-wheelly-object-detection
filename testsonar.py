@@ -7,7 +7,7 @@ if __name__ == '__main__':
     try:
        while True:
         sonar = Sonar()
-        print ("Measured Distance = %.1f cm" % sonar.distance)
+        print ("Measured Distance = %.1f cm" % sonar.distance())
         time.sleep(1)
 
     # Reset by pressing CTRL + C
@@ -15,4 +15,5 @@ if __name__ == '__main__':
        print("Measurement stopped by User")
        gpio.cleanup()
        sys.exit()
+
 

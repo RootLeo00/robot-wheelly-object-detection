@@ -14,9 +14,8 @@ class Sonar():
         #set GPIO direction (IN / OUT)
         GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
         GPIO.setup(GPIO_ECHO, GPIO.IN)
-        self.distance= self.get_distance()
     
-    def get_distance(self):
+    def distance(self):
         # set Trigger to HIGH
         GPIO.output(GPIO_TRIGGER, True)
     
@@ -42,4 +41,5 @@ class Sonar():
         distance = (TimeElapsed * 34300) / 2
         #GPIO.cleanup()
         return distance
+
 
