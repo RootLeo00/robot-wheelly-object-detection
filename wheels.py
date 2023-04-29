@@ -63,7 +63,7 @@ class MotorWheels():
         time.sleep(sec)
 
 
-    def stop():
+    def stop(self):
         gpio.output(17, False)
         gpio.output(27, False)
         gpio.output(23, False) 
