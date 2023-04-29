@@ -1,5 +1,5 @@
 import time
-from gpiozero import Servo
+from gpiozero import Servo as GPIOZeroServo
 from gpiozero.pins.pigpio import PiGPIOFactory
 
 #set GPIO Pins
@@ -35,5 +35,5 @@ class Servo():
     def __init__(self, gpio_number):
         # initialize servo
         factory = PiGPIOFactory()
-        self.servo = Servo(pin=gpio_number, pin_factory=factory)
+        self.servo = GPIOZeroServo(gpio_number, pin_factory=factory)
         self.servo.mid()
