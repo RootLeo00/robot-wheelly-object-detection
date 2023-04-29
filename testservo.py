@@ -1,4 +1,4 @@
-from servo_class import Servo
+from servo import Servo
 import time
 import RPi.GPIO as GPIO
 
