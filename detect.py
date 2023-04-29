@@ -24,7 +24,11 @@ from tflite_support.task import vision
 import utils
 import robot
 import sonar
-from servo import Servo
+from gpiozero import Servo
+
+from gpiozero.pins.pigpio import PiGPIOFactory
+
+factory = PiGPIOFactory()
 import RPi.GPIO as GPIO
 
 
@@ -32,7 +36,6 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         enable_edgetpu: bool) -> None:
     try:
         """Continuously run inference on images acquired from the camera.
-
         Args:
             model: Name of the TFLite object detection model.
             camera_id: The camera id to be passed to OpenCV.
@@ -59,8 +62,8 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         detector = vision.ObjectDetector.create_from_options(options)
 
         # initialize servo
-        servo = Servo(0)
-        servo.rotateNeutral()
+        servo = Servo(16, pin_factory=factory)
+        servo.mid()
 
         # Continuously capture images from the camera and run inference
         while cap.isOpened():
@@ -70,34 +73,39 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
             #print("distance", distance)
             if(distance<30):
                 robot.stop()
-                print("exit stop")
+                time.sleep(1)
+                print("robot stop -> detection stopped")
             else:
                 # move servo-webcam 
-                if servo.duty ==12: #servo is in po)sition left
-                    servo.rotateNeutral()
-                    print(servo.duty)
-                elif servo.duty ==2: #servo is in position right
-                    servo.rotateLeft_90()
-                    print(servo.duty)
-                elif servo.duty == 7: #servo is neutral position
-                    servo.rotateRight_90()
-                    print(servo.duty)
-            
+                if servo.value ==1.0: #servo is in position left
+                    servo.mid()
+                    print(servo.value)
+                elif servo.value ==-1.0: #servo is in position right
+                    servo.max()
+                    print(servo.value)
+                elif servo.value == 0.0 or servo.value==-0.0: #servo is neutral position
+                    servo.min()
+                    print(servo.value)
+
                 # object detection for 10 seconds
                 t_end = time.time() + 10
                 followed=False
+                detection_result=None
                 while not followed and time.time() < t_end:
                     detection_result = do_detection(cap, detector )
                         # move the robot if target is detected
                     for detection in detection_result.detections:
                         category = detection.categories[0]
+                        print("category", category)
                         category_name = category.category_name
-                        if category_name == "person" and category.score>0.70:
+                        if not followed and category_name == "person" and category.score>0.80:
                             print("OBJECT DETECTED")
                             follow_detected_object(servo, cap)
                             # stop following
                             followed=True
-                            
+                            print("stop following")
+                            cap.open(1)
+                            break
     # Stop the program if CTRL+C is pressed.
     except KeyboardInterrupt:
         print("Program is stopped")
@@ -111,34 +119,24 @@ def follow_detected_object(servo, cap):
         # check sonar distance
         distance=sonar.distance()
         while distance>30:
-            # 1) get servo angle (-90 degree, 90 degree)
-            servo_position="none"
-            if servo.duty == 12:
-                servo_position="left"
-            elif servo.duty == 2:
-                servo_position="right"
-            elif servo.duty == 7:
-                servo_position = "center"
-            print("get servo position", servo_position)
-            # 2) move robot forward, forward left (if -45), forward right (if +45)
-            if servo_position == "left":
+            if servo.value ==1.0: #servo is in position left
                 print("move robot left")
                 robot.forwardleft(0.5)
-                servo.rotateNeutral()
-            elif servo_position == "right":
+                servo.mid()
+            elif servo.value ==-1.0: #servo is in position right
                 print("move robot right")
                 robot.forwardright(0.5)
-                servo.rotateNeutral()
-            elif servo_position == "center":
+                servo.mid()
+            elif servo.value == 0.0 or servo.value == -0.0: #servo is neutral position
                 print("move robot center")
                 robot.forward(0.05)
-            # 3) rotate camera angle to 0 degree (centered)
-            #servo.rotateNeutral()
             distance=sonar.distance()
         
         # stop robot if distance is less than 30 cm
         robot.stop()
+        time.sleep(1)
         print("robot stop")
+        return
         # Stop the program if CTRL+C is pressed.
     except KeyboardInterrupt:
         print("Program is stopped")
