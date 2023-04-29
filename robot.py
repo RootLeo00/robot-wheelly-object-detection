@@ -15,7 +15,7 @@ def forward(sec):
  gpio.output(23, True) 
  gpio.output(24, False)
  time.sleep(sec)
- gpio.cleanup()
+ #gpio.cleanup()
 
 def backward(sec):
  init()
@@ -24,7 +24,7 @@ def backward(sec):
  gpio.output(23, False) 
  gpio.output(24, True)
  time.sleep(sec)
- gpio.cleanup()
+ #gpio.cleanup()
 
 def forwardleft(sec):
  init()
@@ -33,7 +33,7 @@ def forwardleft(sec):
  gpio.output(23, False) 
  gpio.output(24, False)
  time.sleep(sec)
- gpio.cleanup()
+ #gpio.cleanup()
 
 
 def backwardleft(sec):
@@ -43,7 +43,7 @@ def backwardleft(sec):
  gpio.output(23, False) 
  gpio.output(24, False)
  time.sleep(sec)
- gpio.cleanup()
+ #gpio.cleanup()
 
 
 def forwardleft(sec):
@@ -53,7 +53,7 @@ def forwardleft(sec):
  gpio.output(23, False) 
  gpio.output(24, False)
  time.sleep(sec)
- gpio.cleanup()
+ #gpio.cleanup()
 
 
 def forwardright(sec):
@@ -63,7 +63,7 @@ def forwardright(sec):
  gpio.output(23, True) 
  gpio.output(24, False)
  time.sleep(sec)
- gpio.cleanup()
+ #gpio.cleanup()
 
 
 def backwardright(sec):
@@ -73,7 +73,7 @@ def backwardright(sec):
  gpio.output(23, False) 
  gpio.output(24, True)
  time.sleep(sec)
- gpio.cleanup()
+ #gpio.cleanup()
 
 
 def stop():
@@ -83,7 +83,7 @@ def stop():
  gpio.output(23, False) 
  gpio.output(24, False)
  time.sleep(1)
- gpio.cleanup()
+ #gpio.cleanup()
 
 ##TESTING   
 # print( "forward")

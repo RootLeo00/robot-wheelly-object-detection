@@ -9,19 +9,19 @@ class Servo():
 
     #   rotate left 90 degrees
     def rotateLeft_90(self):
-        self.duty = 2.5
+        self.duty = 12
         self.pwm.ChangeDutyCycle(self.duty)
         time.sleep(0.5)
         
     #rotate right 90 degrees
     def rotateRight_90(self):
-        self.duty = 12
+        self.duty = 2 
         self.pwm.ChangeDutyCycle(self.duty)
         time.sleep(0.5)
         
     #Posizione Neutra:
     def rotateNeutral(self):
-        self.duty= 7.5
+        self.duty= 7 
         self.pwm.ChangeDutyCycle(self.duty)
         time.sleep(0.5)
     
@@ -29,8 +29,6 @@ class Servo():
         self.duty = float(angle) / 9.0 + 2.5
         self.pwm.ChangeDutyCycle(self.duty)
     
-
-
     
     def __init__(self, duty):
         #GPIO Mode (BOARD / BCM)
