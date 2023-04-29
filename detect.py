@@ -1,17 +1,3 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-"""Main script to run the object detection routine."""
 import argparse
 import sys
 import time
@@ -24,35 +10,31 @@ from tflite_support.task import vision
 import utils
 import robot
 import sonar
-from gpiozero import Servo
+from servo import Servo
 
-from gpiozero.pins.pigpio import PiGPIOFactory
-
-factory = PiGPIOFactory()
 import RPi.GPIO as GPIO
 
 
 def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
         enable_edgetpu: bool) -> None:
+    """Continuously run inference on images acquired from the camera.
+    Args:
+        model: Name of the TFLite object detection model.
+        camera_id: The camera id to be passed to OpenCV.
+        width: The width of the frame captured from the camera.
+        height: The height of the frame captured from the camera.
+        num_threads: The number of CPU threads to run the model.
+        enable_edgetpu: True/False whether the model is a EdgeTPU model.
+    """
     try:
-        """Continuously run inference on images acquired from the camera.
-        Args:
-            model: Name of the TFLite object detection model.
-            camera_id: The camera id to be passed to OpenCV.
-            width: The width of the frame captured from the camera.
-            height: The height of the frame captured from the camera.
-            num_threads: The number of CPU threads to run the model.
-            enable_edgetpu: True/False whether the model is a EdgeTPU model.
-        """
-
-        # Start capturing video input from the camera
+        # start capturing video input from the camera
         cap = cv2.VideoCapture(camera_id)
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         cap_xcenter=cap.get(cv2.CAP_PROP_FRAME_WIDTH) /2
 
 
-        # Initialize the object detection model
+        # initialize the object detection model
         base_options = core.BaseOptions(
             file_name=model, use_coral=enable_edgetpu, num_threads=num_threads)
         detection_options = processor.DetectionOptions(
@@ -61,54 +43,48 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
             base_options=base_options, detection_options=detection_options)
         detector = vision.ObjectDetector.create_from_options(options)
 
-        # initialize servo
-        servo = Servo(16, pin_factory=factory)
-        servo.mid()
+        # # initialize servo
+        servo = Servo(16)
 
-        # Continuously capture images from the camera and run inference
+        # continuously capture images from the camera and run inference
         while cap.isOpened():
 
-            # check sonar distance
+            # check sonar
             distance=sonar.distance()
-            #print("distance", distance)
             if(distance<30):
                 robot.stop()
                 time.sleep(1)
-                print("robot stop -> detection stopped")
             else:
-                # move servo-webcam 
-                if servo.value ==1.0: #servo is in position left
-                    servo.mid()
-                    print(servo.value)
-                elif servo.value ==-1.0: #servo is in position right
-                    servo.max()
-                    print(servo.value)
-                elif servo.value == 0.0 or servo.value==-0.0: #servo is neutral position
-                    servo.min()
-                    print(servo.value)
+                # move servo-webcam for random search
+                if servo.is_rotated_left(): #servo is in left position
+                    servo.rotate_to_right()
+                elif servo.is_rotated_right(): #servo is in right position
+                    servo.rotate_to_middle()
+                elif servo.is_rotated_middle(): #servo is middle position
+                    servo.rotate_to_left()
 
-                # object detection for 5 seconds
+                # perform object detection for 5 seconds
                 t_end = time.time() + 5
-                followed=False
-                detection_result=None
-                while not followed and time.time() < t_end:
+                already_followed=False
+                while not already_followed and time.time() < t_end:
                     detection_result = do_detection(cap, detector )
-                        # move the robot if target is detected
+                    
+                    # move the robot if target is detected
                     for detection in detection_result.detections:
-                        category = detection.categories[0]
-                        print("category", category)
-                        category_name = category.category_name
-                        if not followed and category_name == "person" and category.score>0.70:
+                        category = detection.categories[0] #consider first category
+                        if not already_followed and category.category_name == "person" and category.score>0.70:
                             print("OBJECT DETECTED")
                             follow_detected_object(servo, cap)
+
                             # stop following
-                            followed=True
-                            print("stop following")
-                            cap.open(1)
+                            already_followed=True
+                            cap.open(camera_id) #reload webcam
                             break
+
     # Stop the program if CTRL+C is pressed.
     except KeyboardInterrupt:
-        print("Program is stopped")
+        print("Program has been stopped")
+        servo.rotate_to_middle()
         cap.release()
         cv2.destroyAllWindows()
         GPIO.cleanup()
@@ -119,27 +95,25 @@ def follow_detected_object(servo, cap):
         # check sonar distance
         distance=sonar.distance()
         while distance>30:
-            if servo.value ==1.0: #servo is in position left
-                print("move robot left")
-                robot.forwardright(1)
-                servo.mid()
-            elif servo.value ==-1.0: #servo is in position right
-                print("move robot right")
-                robot.forwardleft(1) #CHANGE TO RIGHT
-                servo.mid()
-            elif servo.value == 0.0 or servo.value == -0.0: #servo is neutral position
-                print("move robot center")
+            if servo.is_rotated_left(): #servo is in position left
+                robot.forwardright(1) #!!!CHANGE TO LEFT
+                servo.rotate_to_middle()
+            elif servo.is_rotated_right(): #servo is in position right
+                robot.forwardleft(1) #!!!CHANGE TO RIGHT
+                servo.rotate_to_middle()
+            elif servo.is_rotated_middle(): #servo is position middle
                 robot.forward(0.05)
             distance=sonar.distance()
         
         # stop robot if distance is less than 30 cm
         robot.stop()
         time.sleep(1)
-        print("robot stop")
         return
-        # Stop the program if CTRL+C is pressed.
+    
+    # Stop the program if CTRL+C is pressed.
     except KeyboardInterrupt:
-        print("Program is stopped")
+        print("Program has been stopped")
+        servo.rotate_to_middle()
         cap.release()
         cv2.destroyAllWindows()
         GPIO.cleanup()
@@ -149,14 +123,6 @@ def do_detection(cap, detector):
     # Variables to calculate FPS
     counter, fps = 0, 0
     start_time = time.time()
-
-    # Visualization parameters
-    row_size = 20  # pixels
-    left_margin = 24  # pixels
-    text_color = (0, 0, 255)  # red
-    font_size = 1
-    font_thickness = 1
-    fps_avg_frame_count = 10
     
     success, image = cap.read()
     height, width, channels = image.shape
@@ -164,8 +130,9 @@ def do_detection(cap, detector):
         sys.exit(
             'ERROR: Unable to read from webcam. Please verify your webcam settings.'
         )
-
+    
     counter += 1
+
     image = cv2.flip(image, 1)
 
     # Convert the image from BGR to RGB as required by the TFLite model.
@@ -178,30 +145,44 @@ def do_detection(cap, detector):
     detection_result = detector.detect(input_tensor)
 
     # Draw keypoints and edges on input image
-    #image = utils.visualize(image, detection_result)
-    # Calculate the FPS
-#    if counter % fps_avg_frame_count == 0:
-       # end_time = time.time()
-       # fps = fps_avg_frame_count / (end_time - start_time)
-       # start_time = time.time()
-    
-        # Show the FPS
-       # fps_text = 'FPS = {:.1f}'.format(fps)
-       # text_location = (left_margin, row_size)
-       # cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
-        #            font_size, text_color, font_thickness)
+    # draw_detection(detection_result, counter, start_time)
 
-    #cv2.imshow('object_detector', image)
     return detection_result
 
+
+def draw_detection(detection_result, counter, start_time):
+    # Visualization parameters
+    row_size = 20  # pixels
+    left_margin = 24  # pixels
+    text_color = (0, 0, 255)  # red
+    font_size = 1
+    font_thickness = 1
+    fps_avg_frame_count = 10
+    image = utils.visualize(image, detection_result)
+    #Calculate the FPS
+    if counter % fps_avg_frame_count == 0:
+       end_time = time.time()
+       fps = fps_avg_frame_count / (end_time - start_time)
+       start_time = time.time()
+    
+    #Show the FPS
+       fps_text = 'FPS = {:.1f}'.format(fps)
+       text_location = (left_margin, row_size)
+       cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
+                   font_size, text_color, font_thickness)
+
+    cv2.imshow('object_detector', image)
+
+
 def robot_direction(boundingbox_center,cap_xcenter):
-    # 4) adjust robot direction based on bounding box
+    # adjust robot direction according to the bounding box
     if (boundingbox_center > cap_xcenter+30): # 30 is the threshold (intorno)
         print("robot moves left")
         robot.forwardleft(0.05)
     elif (boundingbox_center < cap_xcenter-30): # 30 is the threshold (intorno)
         print("robot moves right")
         robot.forwardright(0.05)
+
 
 def main():
   parser = argparse.ArgumentParser(
