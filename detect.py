@@ -87,8 +87,8 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
                     servo.min()
                     print(servo.value)
 
-                # object detection for 10 seconds
-                t_end = time.time() + 10
+                # object detection for 5 seconds
+                t_end = time.time() + 5
                 followed=False
                 detection_result=None
                 while not followed and time.time() < t_end:
@@ -98,7 +98,7 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
                         category = detection.categories[0]
                         print("category", category)
                         category_name = category.category_name
-                        if not followed and category_name == "person" and category.score>0.80:
+                        if not followed and category_name == "person" and category.score>0.70:
                             print("OBJECT DETECTED")
                             follow_detected_object(servo, cap)
                             # stop following
@@ -121,11 +121,11 @@ def follow_detected_object(servo, cap):
         while distance>30:
             if servo.value ==1.0: #servo is in position left
                 print("move robot left")
-                robot.forwardleft(0.5)
+                robot.forwardright(1)
                 servo.mid()
             elif servo.value ==-1.0: #servo is in position right
                 print("move robot right")
-                robot.forwardright(0.5)
+                robot.forwardleft(1) #CHANGE TO RIGHT
                 servo.mid()
             elif servo.value == 0.0 or servo.value == -0.0: #servo is neutral position
                 print("move robot center")
