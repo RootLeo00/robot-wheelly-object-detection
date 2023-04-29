@@ -23,6 +23,7 @@ if __name__ == '__main__':
         time.sleep(2)
         print("rotate neutral")
         servo.rotate_to_middle()
+        gpio.cleanup()
 
     # Reset by pressing CTRL + C
     except KeyboardInterrupt:

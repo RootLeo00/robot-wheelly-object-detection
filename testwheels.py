@@ -17,6 +17,9 @@ if __name__ == '__main__':
         wheels.forwardright(1)
         print("backward right")
         wheels.backwardright(1)
+        print("stop wheels")
+        wheels.stop()
+        gpio.cleanup()
 
     # Reset by pressing CTRL + C
     except KeyboardInterrupt:
