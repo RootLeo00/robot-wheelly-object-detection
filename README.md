@@ -24,7 +24,6 @@ python detect.py
 ```
 
 # File details
-# In Details
 ```
 ├──  test  
 │    └── testservo.py  - a test to understand if servo is working
