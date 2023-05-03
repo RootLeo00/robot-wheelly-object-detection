@@ -23,6 +23,26 @@ sudo pigpiod
 python detect.py
 ```
 
+# File details
+# In Details
+```
+├──  test  
+│    └── testservo.py  - a test to understand if servo is working
+│    └── testsonar.py  - a test to understand if sonar is working
+│    └── testwheels.py  - a test to understand if motors, wheels and h-bridge are working
+|
+|
+├──  detect.py - file with main that runs the program  
+├──  efficientdet_lite0.tflite - pretrained model using EfficientDet0 neural network
+├──  efficientdet_lite0_edgetpu.tflite - pretrained model using EfficientDet0 neural network to use with EdgeTPU
+├──  requirements.txt  - file with the names of the python modules to download
+├──  servo.py - class with Servo functions
+├──  setup.sh - file to run to download tflite models and requirements
+├──  sonar.py - class with Sonar functions
+├──  utils.py - utilities, such as function visualize
+├──  wheels.py - class with functions to control motors and wheels
+```
+
 # Troubleshooting
 1. Camera not found
 - Make sure that you have enabled camera interface on Raspberry Pi, through command:
