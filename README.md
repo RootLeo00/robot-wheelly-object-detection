@@ -50,9 +50,10 @@ sudo raspi-config
 ```bash
 python detect.py --cameraId=1
 ```
-1. Raspberry is slow on detect the object
+2. Raspberry is slow on detect the object
 
     This is totally normal. If you want to have a faster and more accurate detection, you can use EdgeTPU (e.g. Coral Accelerator) or another type of board
 
-2. wheels, sonar or servo don't work
-   try to run their specific tests. You can find the tests in ```/test``` folder.
+3. Wheels, sonar or servo don't work
+   
+   Try to run their specific tests. You can find the tests in ```/test``` folder.
