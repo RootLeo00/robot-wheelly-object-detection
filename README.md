@@ -2,6 +2,7 @@
 End-to-end object detection using Raspberry Pi 4B / 3B+
 
 # Install
+## Software
 1. Clone this repository
 ```bash
 git clone https://github.com/RootLeo00/robot-wheelly-object-detection.git
