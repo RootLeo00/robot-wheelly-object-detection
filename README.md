@@ -1,6 +1,14 @@
 # Wheelly the Coyote - Object Detection on Raspberry Pi 4B / 3B+
 End-to-end object detection using Raspberry Pi 4B / 3B+
 
+##### Table of Contents  
+[Install](#install)  
+[Usage](#usage)  
+[File Details](#file-details)  
+[Bill Of Materials](#bill-of-materials)  
+[Troubleshooting](#troubleshooting)  
+
+
 # Install
 ## Software
 1. Clone this repository
@@ -42,6 +50,21 @@ python detect.py
 ├──  utils.py - utilities, such as function visualize
 ├──  wheels.py - class with functions to control motors and wheels
 ```
+
+# Bill Of Materials
+- Raspberry PI 4B
+- 2 Trolley Chassis
+- 4 Micro DC Motor (Geared) - 90 RPM (6-12V)
+- 4 wheels
+- L298N Dual H-Bridge Motor Controller
+- Ultrasonic Sensor - HC-SR04 (Sonar)
+- Jumper wires MM / FM / FF
+- USB-C wire
+- Cooling Fan
+- Power Bank 5200mAh
+- 4 batteries AA (1.5 V)
+- Raspberry Pi Camera Module 1.3
+- Micro Servo 9G 
 
 # Troubleshooting
 1. Camera not found
