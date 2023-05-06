@@ -1,7 +1,8 @@
 import time
-from sonar import Sonar
 import RPi.GPIO as gpio
 import sys
+sys.path.append('../')
+from sonar import Sonar
 
 if __name__ == '__main__':
     try:
