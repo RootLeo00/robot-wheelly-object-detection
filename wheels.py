@@ -23,31 +23,21 @@ class MotorWheels():
         gpio.output(24, True)
         time.sleep(sec)
 
-    def forwardleft(self, sec):
+    def forwardright(self, sec):
         gpio.output(17, True)
         gpio.output(27, False)
         gpio.output(23, False) 
         gpio.output(24, False)
         time.sleep(sec)
 
-
-    def backwardleft(self, sec):
+    def backwardright(self, sec):
         gpio.output(17, False)
         gpio.output(27, True)
         gpio.output(23, False) 
         gpio.output(24, False)
         time.sleep(sec)
 
-
     def forwardleft(self, sec):
-        gpio.output(17, True)
-        gpio.output(27, False)
-        gpio.output(23, False) 
-        gpio.output(24, False)
-        time.sleep(sec)
-
-
-    def forwardright(self, sec):
         gpio.output(17, False)
         gpio.output(27, False)
         gpio.output(23, True) 
@@ -55,7 +45,7 @@ class MotorWheels():
         time.sleep(sec)
 
 
-    def backwardright(self, sec):
+    def backwardleft(self, sec):
         gpio.output(17, False)
         gpio.output(27, False)
         gpio.output(23, False) 
