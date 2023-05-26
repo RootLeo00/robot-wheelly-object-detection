@@ -1,7 +1,8 @@
-from servo import Servo
 import time
 import RPi.GPIO as gpio
 import sys
+sys.path.append('../')
+from servo import Servo
 
 if __name__ == '__main__':
     try:

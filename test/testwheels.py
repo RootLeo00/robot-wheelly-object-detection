@@ -1,7 +1,7 @@
-from wheels import MotorWheels
 import RPi.GPIO as gpio
 import sys
-
+sys.path.append('../')
+from wheels import MotorWheels
 if __name__ == '__main__':
     try:
         wheels=MotorWheels()
