@@ -18,7 +18,7 @@ git clone https://github.com/RootLeo00/robot-wheelly-object-detection.git
 2. Download requirements
 ```bash
 cd robot-wheelly-object-detection
-chmod 777 setup.sh
+chmod +x setup.sh
 ./setup.sh
 ```
 
